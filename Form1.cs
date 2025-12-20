@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -21,13 +19,18 @@ namespace Rubi_Downloader
 		{
 			InitializeComponent();
 
-			toolStripStatusLabel1.Text = "Pronto";
+			toolStripStatusLabel1.Text = $"Pasta de saída definida: {Path.Combine(Directory.GetCurrentDirectory(), outputFolder)}";
 
 			// Cria a pasta onde os vídeos serão salvos
 			try
 			{
 				Directory.CreateDirectory(outputFolder);
-			} catch(Exception)
+
+				// Limpa logs antigos
+				File.Delete("download_log.txt");
+				File.Delete("download_error_log.txt");
+			}
+			catch (Exception)
 			{
 
 			}
@@ -86,6 +89,7 @@ namespace Rubi_Downloader
 			setDefinedProgressBar(linksInput.Length);
 
 			var tasks = new List<Task>();
+			List<Task> convertTasks = new List<Task>();
 
 			foreach (string link in linksInput)
 			{
@@ -105,6 +109,23 @@ namespace Rubi_Downloader
 			updateStatusLabel(
 				$"Finalizado | Sucesso: {successfulDownloads} | Falhas: {failedDownloads}"
 			);
+
+			// Itera sobre os arquivos baixados para conversão
+			var downloadedFiles = Directory.GetFiles(outputFolder, "*.webm");
+			string ffmpegPath = Path.Combine(Directory.GetCurrentDirectory(), "ffmpeg", "bin", "ffmpeg.exe");
+
+			// Para cada arquivo .webm, cria uma tarefa de conversão
+			foreach (string file in downloadedFiles)
+			{
+				convertTasks.Add(ConvertWebmToMp4(
+					ffmpegPath,
+					file,
+					Path.ChangeExtension(file, ".mp4")
+				));
+			}
+
+			await Task.WhenAll(convertTasks);
+			updateStatusLabel("Todas as conversões concluídas.");
 
 			MessageBox.Show(
 				"Todos os downloads foram processados!",
@@ -128,7 +149,7 @@ namespace Rubi_Downloader
 						StartInfo = new ProcessStartInfo
 						{
 							FileName = "yt-dlp.exe",
-							Arguments = $"-t mp4 -t mkv -k -o \"{outputFolder}\\%(title)s.%(ext)s\" {url}",
+							Arguments = $"-o \"{outputFolder}\\%(title)s.%(ext)s\" {url}",
 							UseShellExecute = false,
 							RedirectStandardOutput = true,
 							RedirectStandardError = true,
@@ -140,7 +161,7 @@ namespace Rubi_Downloader
 					{
 						if (!string.IsNullOrEmpty(e.Data))
 						{
-							lock(_logLock)
+							lock (_logLock)
 							{
 								File.AppendAllText(
 									"download_log.txt",
@@ -156,7 +177,7 @@ namespace Rubi_Downloader
 					{
 						if (!string.IsNullOrEmpty(e.Data))
 						{
-							lock(_logLock)
+							lock (_logLock)
 							{
 								File.AppendAllText(
 									"download_error_log.txt",
@@ -234,6 +255,7 @@ namespace Rubi_Downloader
 			MessageBox.Show(
 				"Instruções de uso:\n\n" +
 				"1. Insira os links do YouTube, um por linha.\n" +
+				"2. Selecione a pasta de saída (opcional).\n" +
 				"2. Clique em 'Baixar'.\n" +
 				"3. Aguarde o processamento.\n\n" +
 				"Certifique-se de que o yt-dlp.exe esteja na mesma pasta do aplicativo.",
@@ -251,6 +273,99 @@ namespace Rubi_Downloader
 		private void iconeAjuda_Click(object sender, EventArgs e)
 		{
 			botaoAjuda_Click(sender, e);
+		}
+
+		private void botaoEscolherPasta_Click(object sender, EventArgs e)
+		{
+			using (var folderDialog = new FolderBrowserDialog())
+			{
+				folderDialog.Description = "ESCOLHA A PASTA ONDE OS VÍDEOS SERÃO SALVOS";
+				folderDialog.ShowNewFolderButton = true;
+
+				if (folderDialog.ShowDialog() == DialogResult.OK)
+				{
+					outputFolder = folderDialog.SelectedPath;
+					updateStatusLabel($"Pasta de saída definida: {outputFolder}");
+
+					MessageBox.Show($"Pasta de saída: {outputFolder}", "Mudança de pasta", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				}
+			}
+		}
+
+		private void iconeEscolherPasta_Click(object sender, EventArgs e)
+		{
+			botaoEscolherPasta_Click(sender, e);
+		}
+
+		private void iconeArquivosBaixados_Click(object sender, EventArgs e)
+		{
+			botaoVerArquivos_Click(sender, e);
+		}
+
+		private void botaoVerArquivos_Click(object sender, EventArgs e)
+		{
+			OpenFolderInExplorer(outputFolder);
+		}
+
+		private void OpenFolderInExplorer(string folderPath)
+		{
+			if (!Directory.Exists(folderPath))
+				return;
+
+			Process.Start(new ProcessStartInfo
+			{
+				FileName = "explorer.exe",
+				Arguments = folderPath,
+				UseShellExecute = true
+			});
+		}
+
+		private Task ConvertWebmToMp4(string ffmpegPath,string inputWebm, string outputMp4)
+		{
+			return Task.Run(() =>
+			{
+				var args =
+				$"-i \"{inputWebm}\" " +
+				"-c:v libx264 " +
+				"-c:a aac " +
+				"-movflags +faststart " +
+				$"\"{outputMp4}\"";
+
+				var process = new Process
+				{
+					StartInfo = new ProcessStartInfo
+					{
+						FileName = ffmpegPath,   // ex: "ffmpeg.exe" ou caminho completo
+						Arguments = args,
+						RedirectStandardOutput = true,
+						RedirectStandardError = true,
+						UseShellExecute = false,
+						CreateNoWindow = true
+					}
+				};
+
+				process.OutputDataReceived += (s, e) =>
+				{
+					if (!string.IsNullOrWhiteSpace(e.Data))
+						Console.WriteLine(e.Data);
+				};
+
+				process.ErrorDataReceived += (s, e) =>
+				{
+					if (!string.IsNullOrWhiteSpace(e.Data))
+						Console.WriteLine(e.Data);
+				};
+
+				process.Start();
+				process.BeginOutputReadLine();
+				process.BeginErrorReadLine();
+
+				updateStatusLabel($"Convertendo: {Path.GetFileName(inputWebm)} (Aguarde, pode demorar um pouco)");
+				process.WaitForExit();
+
+				if (process.ExitCode != 0)
+					throw new Exception($"ffmpeg falhou (ExitCode={process.ExitCode})");
+			});
 		}
 	}
 }

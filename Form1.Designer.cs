@@ -38,14 +38,20 @@
 			this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.iconeAjuda = new System.Windows.Forms.PictureBox();
 			this.iconeBaixar = new System.Windows.Forms.PictureBox();
+			this.botaoEscolherPasta = new System.Windows.Forms.Button();
+			this.iconeEscolherPasta = new System.Windows.Forms.PictureBox();
+			this.botaoVerArquivos = new System.Windows.Forms.Button();
+			this.iconeArquivosBaixados = new System.Windows.Forms.PictureBox();
 			this.statusStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.iconeAjuda)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.iconeBaixar)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.iconeEscolherPasta)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.iconeArquivosBaixados)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// caixaTextoLinks
 			// 
-			this.caixaTextoLinks.BackColor = System.Drawing.SystemColors.ScrollBar;
+			this.caixaTextoLinks.BackColor = System.Drawing.Color.Silver;
 			this.caixaTextoLinks.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.caixaTextoLinks.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.caixaTextoLinks.ForeColor = System.Drawing.Color.Blue;
@@ -62,9 +68,10 @@
 			this.botaoBaixar.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(33)))), ((int)(((byte)(71)))));
 			this.botaoBaixar.Location = new System.Drawing.Point(12, 482);
 			this.botaoBaixar.Name = "botaoBaixar";
-			this.botaoBaixar.Size = new System.Drawing.Size(264, 89);
+			this.botaoBaixar.Size = new System.Drawing.Size(160, 89);
 			this.botaoBaixar.TabIndex = 1;
 			this.botaoBaixar.Text = "Baixar";
+			this.botaoBaixar.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 			this.botaoBaixar.UseVisualStyleBackColor = true;
 			this.botaoBaixar.Click += new System.EventHandler(this.botaoBaixar_Click);
 			// 
@@ -84,11 +91,12 @@
 			this.botaoAjuda.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.botaoAjuda.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(183)))), ((int)(((byte)(211)))));
 			this.botaoAjuda.ImageAlign = System.Drawing.ContentAlignment.BottomLeft;
-			this.botaoAjuda.Location = new System.Drawing.Point(313, 482);
+			this.botaoAjuda.Location = new System.Drawing.Point(187, 482);
 			this.botaoAjuda.Name = "botaoAjuda";
-			this.botaoAjuda.Size = new System.Drawing.Size(264, 89);
+			this.botaoAjuda.Size = new System.Drawing.Size(172, 89);
 			this.botaoAjuda.TabIndex = 3;
 			this.botaoAjuda.Text = "Ajuda";
+			this.botaoAjuda.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 			this.botaoAjuda.UseVisualStyleBackColor = true;
 			this.botaoAjuda.Click += new System.EventHandler(this.botaoAjuda_Click);
 			// 
@@ -118,7 +126,7 @@
 			// 
 			this.iconeAjuda.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("iconeAjuda.BackgroundImage")));
 			this.iconeAjuda.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-			this.iconeAjuda.Location = new System.Drawing.Point(329, 493);
+			this.iconeAjuda.Location = new System.Drawing.Point(209, 493);
 			this.iconeAjuda.Name = "iconeAjuda";
 			this.iconeAjuda.Size = new System.Drawing.Size(69, 65);
 			this.iconeAjuda.TabIndex = 5;
@@ -129,18 +137,74 @@
 			// 
 			this.iconeBaixar.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("iconeBaixar.BackgroundImage")));
 			this.iconeBaixar.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-			this.iconeBaixar.Location = new System.Drawing.Point(24, 493);
+			this.iconeBaixar.Location = new System.Drawing.Point(29, 493);
 			this.iconeBaixar.Name = "iconeBaixar";
 			this.iconeBaixar.Size = new System.Drawing.Size(69, 65);
 			this.iconeBaixar.TabIndex = 6;
 			this.iconeBaixar.TabStop = false;
 			this.iconeBaixar.Click += new System.EventHandler(this.iconeBaixar_Click);
 			// 
+			// botaoEscolherPasta
+			// 
+			this.botaoEscolherPasta.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.botaoEscolherPasta.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.botaoEscolherPasta.ForeColor = System.Drawing.Color.Black;
+			this.botaoEscolherPasta.ImageAlign = System.Drawing.ContentAlignment.BottomLeft;
+			this.botaoEscolherPasta.Location = new System.Drawing.Point(376, 482);
+			this.botaoEscolherPasta.Name = "botaoEscolherPasta";
+			this.botaoEscolherPasta.Size = new System.Drawing.Size(252, 89);
+			this.botaoEscolherPasta.TabIndex = 7;
+			this.botaoEscolherPasta.Text = "Escolher Pasta";
+			this.botaoEscolherPasta.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			this.botaoEscolherPasta.UseVisualStyleBackColor = true;
+			this.botaoEscolherPasta.Click += new System.EventHandler(this.botaoEscolherPasta_Click);
+			// 
+			// iconeEscolherPasta
+			// 
+			this.iconeEscolherPasta.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("iconeEscolherPasta.BackgroundImage")));
+			this.iconeEscolherPasta.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+			this.iconeEscolherPasta.Location = new System.Drawing.Point(400, 493);
+			this.iconeEscolherPasta.Name = "iconeEscolherPasta";
+			this.iconeEscolherPasta.Size = new System.Drawing.Size(69, 65);
+			this.iconeEscolherPasta.TabIndex = 8;
+			this.iconeEscolherPasta.TabStop = false;
+			this.iconeEscolherPasta.Click += new System.EventHandler(this.iconeEscolherPasta_Click);
+			// 
+			// botaoVerArquivos
+			// 
+			this.botaoVerArquivos.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.botaoVerArquivos.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.botaoVerArquivos.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(149)))), ((int)(((byte)(69)))), ((int)(((byte)(237)))));
+			this.botaoVerArquivos.ImageAlign = System.Drawing.ContentAlignment.BottomLeft;
+			this.botaoVerArquivos.Location = new System.Drawing.Point(804, 482);
+			this.botaoVerArquivos.Name = "botaoVerArquivos";
+			this.botaoVerArquivos.Size = new System.Drawing.Size(299, 89);
+			this.botaoVerArquivos.TabIndex = 9;
+			this.botaoVerArquivos.Text = "Ver arquivos baixados";
+			this.botaoVerArquivos.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			this.botaoVerArquivos.UseVisualStyleBackColor = true;
+			this.botaoVerArquivos.Click += new System.EventHandler(this.botaoVerArquivos_Click);
+			// 
+			// iconeArquivosBaixados
+			// 
+			this.iconeArquivosBaixados.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("iconeArquivosBaixados.BackgroundImage")));
+			this.iconeArquivosBaixados.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+			this.iconeArquivosBaixados.Location = new System.Drawing.Point(821, 493);
+			this.iconeArquivosBaixados.Name = "iconeArquivosBaixados";
+			this.iconeArquivosBaixados.Size = new System.Drawing.Size(69, 65);
+			this.iconeArquivosBaixados.TabIndex = 10;
+			this.iconeArquivosBaixados.TabStop = false;
+			this.iconeArquivosBaixados.Click += new System.EventHandler(this.iconeArquivosBaixados_Click);
+			// 
 			// mainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1115, 612);
+			this.Controls.Add(this.iconeArquivosBaixados);
+			this.Controls.Add(this.botaoVerArquivos);
+			this.Controls.Add(this.iconeEscolherPasta);
+			this.Controls.Add(this.botaoEscolherPasta);
 			this.Controls.Add(this.iconeBaixar);
 			this.Controls.Add(this.iconeAjuda);
 			this.Controls.Add(this.statusStrip1);
@@ -157,6 +221,8 @@
 			this.statusStrip1.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.iconeAjuda)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.iconeBaixar)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.iconeEscolherPasta)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.iconeArquivosBaixados)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -173,6 +239,10 @@
 		private System.Windows.Forms.PictureBox iconeBaixar;
 		private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+		private System.Windows.Forms.Button botaoEscolherPasta;
+		private System.Windows.Forms.PictureBox iconeEscolherPasta;
+		private System.Windows.Forms.Button botaoVerArquivos;
+		private System.Windows.Forms.PictureBox iconeArquivosBaixados;
 	}
 }
 
