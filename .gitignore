@@ -1,0 +1,103 @@
+## --------------------------------------------------
+## Visual Studio / C# / .NET
+## --------------------------------------------------
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio cache
+.vs/
+
+# Build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Build outputs
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+ARM/
+ARM64/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+.nuget.props
+.nuget.targets
+
+# Publish
+publish/
+wwwroot/**/dist/
+wwwroot/**/build/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Resharper / Rider
+_ReSharper*/
+*.DotSettings.user
+.idea/
+
+# JetBrains Rider
+*.sln.iml
+
+# dotCover
+*.dotCover
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# BenchmarkDotNet
+BenchmarkDotNet.Artifacts/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.bak
+*.old
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# SQL Server
+*.mdf
+*.ldf
+
+# Azure / App Services
+.azure/
+*.Publish.xml
+*.pubxml
+*.pubxml.user
+
+# Secrets
+secrets.json
+appsettings.Development.json
+
+# Tools
+.vscode/
+
+dist/
