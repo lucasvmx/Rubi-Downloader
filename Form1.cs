@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
+using System.Drawing;
 
 namespace Rubi_Downloader
 {
@@ -13,26 +15,71 @@ namespace Rubi_Downloader
 		private int failedDownloads = 0;
 		private int successfulDownloads = 0;
 		private static readonly object _logLock = new object();
-		private string outputFolder = @"Videos";
+		private static readonly object _taskLock = new object();
+		private string outputFolder = @"Data\Videos";
+		private string logsFolder = @"Data\Logs";
+
+		private string errorFile = "download_error_log.txt";
+		private string logsFile = "download_log.txt";
 
 		public mainForm()
 		{
 			InitializeComponent();
 
+			toolStripStatusLabel1.ForeColor = Color.Blue;
 			toolStripStatusLabel1.Text = $"Pasta de saída definida: {Path.Combine(Directory.GetCurrentDirectory(), outputFolder)}";
 
 			// Cria a pasta onde os vídeos serão salvos
 			try
 			{
-				Directory.CreateDirectory(outputFolder);
+				Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), outputFolder));
+				Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), logsFolder));
 
+				// Se o arquivo de configuração existir, carrega as configurações
+				if(File.Exists("config.xml"))
+				{
+					LoadConfig();
+				}
+					
 				// Limpa logs antigos
-				File.Delete("download_log.txt");
-				File.Delete("download_error_log.txt");
+				errorFile = Path.Combine(Directory.GetCurrentDirectory(), logsFolder, errorFile);
+				logsFile = Path.Combine(Directory.GetCurrentDirectory(), logsFolder, logsFile);
+
+				File.Delete(errorFile);
+				File.Delete(logsFile);
 			}
 			catch (Exception)
 			{
 
+			}
+		}
+
+		private void SaveConfig()
+		{
+			var config = new Config
+			{
+				OutputFolder = outputFolder
+			};
+			var xmlDoc = new XmlDocument();
+			var root = xmlDoc.CreateElement("Config");
+			var outputFolderElement = xmlDoc.CreateElement("OutputFolder");
+			outputFolderElement.InnerText = config.OutputFolder;
+			root.AppendChild(outputFolderElement);
+			xmlDoc.AppendChild(root);
+			xmlDoc.Save("config.xml");
+		}
+
+		private void LoadConfig()
+		{
+			if (!File.Exists("config.xml"))
+				return;
+			var xmlDoc = new XmlDocument();
+			xmlDoc.Load("config.xml");
+			var outputFolderElement = xmlDoc.SelectSingleNode("/Config/OutputFolder");
+			if (outputFolderElement != null)
+			{
+				outputFolder = outputFolderElement.InnerText;
+				updateStatusLabel($"Pasta de saída definida: {outputFolder}");
 			}
 		}
 
@@ -95,6 +142,7 @@ namespace Rubi_Downloader
 			{
 				if (!isValidYoutubeLink(link))
 				{
+					setStatusLabelColor(Color.Red);
 					updateStatusLabel($"Link inválido: {link}");
 					IncrementarProgresso();
 					continue;
@@ -106,26 +154,32 @@ namespace Rubi_Downloader
 			// Aguarda TODOS os downloads finalizarem
 			await Task.WhenAll(tasks);
 
+			setStatusLabelColor(Color.Green);
 			updateStatusLabel(
 				$"Finalizado | Sucesso: {successfulDownloads} | Falhas: {failedDownloads}"
 			);
 
-			// Itera sobre os arquivos baixados para conversão
-			var downloadedFiles = Directory.GetFiles(outputFolder, "*.webm");
-			string ffmpegPath = Path.Combine(Directory.GetCurrentDirectory(), "ffmpeg", "bin", "ffmpeg.exe");
-
-			// Para cada arquivo .webm, cria uma tarefa de conversão
-			foreach (string file in downloadedFiles)
+			if(checkBoxMp4.Checked)
 			{
-				convertTasks.Add(ConvertWebmToMp4(
-					ffmpegPath,
-					file,
-					Path.ChangeExtension(file, ".mp4")
-				));
-			}
+				// Itera sobre os arquivos baixados para conversão
+				var downloadedFiles = Directory.GetFiles(outputFolder, "*.webm");
+				string ffmpegPath = Path.Combine(Directory.GetCurrentDirectory(), "bin", "ffmpeg.exe");
 
-			await Task.WhenAll(convertTasks);
-			updateStatusLabel("Todas as conversões concluídas.");
+				// Para cada arquivo .webm, cria uma tarefa de conversão
+				foreach (string file in downloadedFiles)
+				{
+					convertTasks.Add(ConvertWebmToMp4(
+						ffmpegPath,
+						file,
+						Path.ChangeExtension(file, ".mp4")
+					));
+
+					await Task.WhenAll(convertTasks);
+				}
+
+				setStatusLabelColor(Color.Green);
+				updateStatusLabel("Todas as conversões concluídas.");
+			}
 
 			MessageBox.Show(
 				"Todos os downloads foram processados!",
@@ -164,10 +218,11 @@ namespace Rubi_Downloader
 							lock (_logLock)
 							{
 								File.AppendAllText(
-									"download_log.txt",
+									logsFile,
 									$"Link: {url} | Mensagem: {e.Data}{Environment.NewLine}"
 								);
 
+								setStatusLabelColor(Color.Blue);
 								updateStatusLabel($"Baixando: {url}");
 							}
 						}
@@ -180,7 +235,7 @@ namespace Rubi_Downloader
 							lock (_logLock)
 							{
 								File.AppendAllText(
-									"download_error_log.txt",
+									errorFile,
 									$"Erro no link: {url} | Mensagem: {e.Data}{Environment.NewLine}"
 								);
 							}
@@ -195,17 +250,20 @@ namespace Rubi_Downloader
 					if (process.ExitCode == 0)
 					{
 						successfulDownloads++;
+						setStatusLabelColor(Color.Green);
 						updateStatusLabel($"Download concluído: {url}");
 					}
 					else
 					{
 						failedDownloads++;
+						setStatusLabelColor(Color.Red);
 						updateStatusLabel($"Erro no download: {url}");
 					}
 				}
 				catch (Exception ex)
 				{
 					failedDownloads++;
+					setStatusLabelColor(Color.Red);
 					updateStatusLabel($"Erro ao iniciar download: {ex.Message}");
 				}
 				finally
@@ -256,9 +314,10 @@ namespace Rubi_Downloader
 				"Instruções de uso:\n\n" +
 				"1. Insira os links do YouTube, um por linha.\n" +
 				"2. Selecione a pasta de saída (opcional).\n" +
-				"2. Clique em 'Baixar'.\n" +
-				"3. Aguarde o processamento.\n\n" +
-				"Certifique-se de que o yt-dlp.exe esteja na mesma pasta do aplicativo.",
+				"3. Clique em \"Baixar\" para iniciar o download.\n" +
+				"4. Se a opção \"Converter para MP4\" estiver marcada, o programa converterá automaticamente os arquivos quando necessário. " +
+				"Esse processo pode levar vários minutos, especialmente para vídeos longos ou de alta qualidade.\n" +
+				"5. Aguarde a conclusão do processamento.",
 				"Ajuda",
 				MessageBoxButtons.OK,
 				MessageBoxIcon.Information
@@ -285,8 +344,19 @@ namespace Rubi_Downloader
 				if (folderDialog.ShowDialog() == DialogResult.OK)
 				{
 					outputFolder = folderDialog.SelectedPath;
+					setStatusLabelColor(Color.Blue);
 					updateStatusLabel($"Pasta de saída definida: {outputFolder}");
 
+					// Salva a configuração
+					try
+					{
+						SaveConfig();
+					} catch
+					{
+						MessageBox.Show("Erro ao salvar configuração.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+						return;
+					}
+					
 					MessageBox.Show($"Pasta de saída: {outputFolder}", "Mudança de pasta", MessageBoxButtons.OK, MessageBoxIcon.Information);
 				}
 			}
@@ -320,8 +390,22 @@ namespace Rubi_Downloader
 			});
 		}
 
+		private void setStatusLabelColor(Color color)
+		{
+			BeginInvoke(new Action(() =>
+			{
+				toolStripStatusLabel1.ForeColor = color;
+			}));
+		}
+
 		private Task ConvertWebmToMp4(string ffmpegPath,string inputWebm, string outputMp4)
 		{
+			// Não permite múltiplas conversões simultâneas
+			lock (_taskLock) 
+			{
+				updateStatusLabel($"Iniciando conversão: {Path.GetFileName(inputWebm)}");
+			}
+
 			return Task.Run(() =>
 			{
 				var args =
@@ -360,12 +444,25 @@ namespace Rubi_Downloader
 				process.BeginOutputReadLine();
 				process.BeginErrorReadLine();
 
-				updateStatusLabel($"Convertendo: {Path.GetFileName(inputWebm)} (Aguarde, pode demorar um pouco)");
+				updateStatusLabel($"Convertendo: {Path.GetFileName(inputWebm)} (Aguarde pois pode demorar um pouco)");
 				process.WaitForExit();
 
 				if (process.ExitCode != 0)
 					throw new Exception($"ffmpeg falhou (ExitCode={process.ExitCode})");
 			});
 		}
+
+		private void mainForm_FormClosed(object sender, FormClosedEventArgs e)
+		{
+			Process.GetProcessesByName("yt-dlp").ToList().ForEach(p => p.Kill());
+
+			// finaliza o ffmpeg.exe se estiver rodando
+			Process.GetProcessesByName("ffmpeg").ToList().ForEach(p => p.Kill());
+		}
+	}
+
+	public class Config
+	{
+		public string OutputFolder { get; set; }
 	}
 }
