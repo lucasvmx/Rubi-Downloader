@@ -3,14 +3,14 @@
 
 #define MyAppName "Rubi Downloader"
 #define MyAppVersion "1.0"
-#define MyAppPublisher "Lucas Vieira"
+#define MyAppPublisher "Lucas Vieira, Inc"
 #define MyAppURL "https://github.com/lucasvmx/Rubi-Downloader"
 #define MyAppExeName "Rubi Downloader.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{BB278584-F6FF-47AA-81F4-C89AAE6DAE22}
+AppId={{E88A6B2F-2BC8-4762-9714-25355DE04D65}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -18,7 +18,7 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={autopf}\{#MyAppName}
+DefaultDirName=C:\Rubi\{#MyAppName}
 DisableDirPage=yes
 UninstallDisplayIcon={app}\{#MyAppExeName}
 DisableProgramGroupPage=yes
