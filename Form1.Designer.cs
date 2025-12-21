@@ -31,7 +31,7 @@
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(mainForm));
 			this.caixaTextoLinks = new System.Windows.Forms.RichTextBox();
 			this.botaoBaixar = new System.Windows.Forms.Button();
-			this.label1 = new System.Windows.Forms.Label();
+			this.headerLabel = new System.Windows.Forms.Label();
 			this.botaoAjuda = new System.Windows.Forms.Button();
 			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
 			this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
@@ -42,6 +42,7 @@
 			this.iconeEscolherPasta = new System.Windows.Forms.PictureBox();
 			this.botaoVerArquivos = new System.Windows.Forms.Button();
 			this.iconeArquivosBaixados = new System.Windows.Forms.PictureBox();
+			this.checkBoxMp4 = new System.Windows.Forms.CheckBox();
 			this.statusStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.iconeAjuda)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.iconeBaixar)).BeginInit();
@@ -55,9 +56,9 @@
 			this.caixaTextoLinks.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.caixaTextoLinks.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.caixaTextoLinks.ForeColor = System.Drawing.Color.Blue;
-			this.caixaTextoLinks.Location = new System.Drawing.Point(12, 102);
+			this.caixaTextoLinks.Location = new System.Drawing.Point(12, 60);
 			this.caixaTextoLinks.Name = "caixaTextoLinks";
-			this.caixaTextoLinks.Size = new System.Drawing.Size(1091, 364);
+			this.caixaTextoLinks.Size = new System.Drawing.Size(1091, 403);
 			this.caixaTextoLinks.TabIndex = 0;
 			this.caixaTextoLinks.Text = "";
 			// 
@@ -75,15 +76,15 @@
 			this.botaoBaixar.UseVisualStyleBackColor = true;
 			this.botaoBaixar.Click += new System.EventHandler(this.botaoBaixar_Click);
 			// 
-			// label1
+			// headerLabel
 			// 
-			this.label1.AutoSize = true;
-			this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label1.Location = new System.Drawing.Point(321, 45);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(529, 24);
-			this.label1.TabIndex = 2;
-			this.label1.Text = "Cole os links dos vídeos no campo a seguir (um link por linha)";
+			this.headerLabel.AutoSize = true;
+			this.headerLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.headerLabel.Location = new System.Drawing.Point(314, 19);
+			this.headerLabel.Name = "headerLabel";
+			this.headerLabel.Size = new System.Drawing.Size(529, 24);
+			this.headerLabel.TabIndex = 2;
+			this.headerLabel.Text = "Cole os links dos vídeos no campo a seguir (um link por linha)";
 			// 
 			// botaoAjuda
 			// 
@@ -196,11 +197,22 @@
 			this.iconeArquivosBaixados.TabStop = false;
 			this.iconeArquivosBaixados.Click += new System.EventHandler(this.iconeArquivosBaixados_Click);
 			// 
+			// checkBoxMp4
+			// 
+			this.checkBoxMp4.AutoSize = true;
+			this.checkBoxMp4.Location = new System.Drawing.Point(643, 482);
+			this.checkBoxMp4.Name = "checkBoxMp4";
+			this.checkBoxMp4.Size = new System.Drawing.Size(121, 17);
+			this.checkBoxMp4.TabIndex = 11;
+			this.checkBoxMp4.Text = "Converter para MP4";
+			this.checkBoxMp4.UseVisualStyleBackColor = true;
+			// 
 			// mainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1115, 612);
+			this.Controls.Add(this.checkBoxMp4);
 			this.Controls.Add(this.iconeArquivosBaixados);
 			this.Controls.Add(this.botaoVerArquivos);
 			this.Controls.Add(this.iconeEscolherPasta);
@@ -209,7 +221,7 @@
 			this.Controls.Add(this.iconeAjuda);
 			this.Controls.Add(this.statusStrip1);
 			this.Controls.Add(this.botaoAjuda);
-			this.Controls.Add(this.label1);
+			this.Controls.Add(this.headerLabel);
 			this.Controls.Add(this.botaoBaixar);
 			this.Controls.Add(this.caixaTextoLinks);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -217,6 +229,7 @@
 			this.MaximizeBox = false;
 			this.Name = "mainForm";
 			this.Text = "Rubi Downloader";
+			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.mainForm_FormClosed);
 			this.statusStrip1.ResumeLayout(false);
 			this.statusStrip1.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.iconeAjuda)).EndInit();
@@ -232,7 +245,7 @@
 
 		private System.Windows.Forms.RichTextBox caixaTextoLinks;
 		private System.Windows.Forms.Button botaoBaixar;
-		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.Label headerLabel;
 		private System.Windows.Forms.Button botaoAjuda;
 		private System.Windows.Forms.StatusStrip statusStrip1;
 		private System.Windows.Forms.PictureBox iconeAjuda;
@@ -243,6 +256,7 @@
 		private System.Windows.Forms.PictureBox iconeEscolherPasta;
 		private System.Windows.Forms.Button botaoVerArquivos;
 		private System.Windows.Forms.PictureBox iconeArquivosBaixados;
+		private System.Windows.Forms.CheckBox checkBoxMp4;
 	}
 }
 
