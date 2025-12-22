@@ -55,7 +55,7 @@
 			this.caixaTextoLinks.BackColor = System.Drawing.Color.Silver;
 			this.caixaTextoLinks.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.caixaTextoLinks.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.caixaTextoLinks.ForeColor = System.Drawing.Color.Blue;
+			this.caixaTextoLinks.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			this.caixaTextoLinks.Location = new System.Drawing.Point(12, 60);
 			this.caixaTextoLinks.Name = "caixaTextoLinks";
 			this.caixaTextoLinks.Size = new System.Drawing.Size(1091, 403);
@@ -80,7 +80,8 @@
 			// 
 			this.headerLabel.AutoSize = true;
 			this.headerLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.headerLabel.Location = new System.Drawing.Point(314, 19);
+			this.headerLabel.ForeColor = System.Drawing.Color.Maroon;
+			this.headerLabel.Location = new System.Drawing.Point(294, 20);
 			this.headerLabel.Name = "headerLabel";
 			this.headerLabel.Size = new System.Drawing.Size(529, 24);
 			this.headerLabel.TabIndex = 2;
@@ -173,24 +174,25 @@
 			// 
 			// botaoVerArquivos
 			// 
+			this.botaoVerArquivos.BackColor = System.Drawing.SystemColors.Control;
 			this.botaoVerArquivos.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.botaoVerArquivos.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.botaoVerArquivos.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(149)))), ((int)(((byte)(69)))), ((int)(((byte)(237)))));
 			this.botaoVerArquivos.ImageAlign = System.Drawing.ContentAlignment.BottomLeft;
-			this.botaoVerArquivos.Location = new System.Drawing.Point(804, 482);
+			this.botaoVerArquivos.Location = new System.Drawing.Point(650, 482);
 			this.botaoVerArquivos.Name = "botaoVerArquivos";
 			this.botaoVerArquivos.Size = new System.Drawing.Size(299, 89);
 			this.botaoVerArquivos.TabIndex = 9;
 			this.botaoVerArquivos.Text = "Ver arquivos baixados";
 			this.botaoVerArquivos.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-			this.botaoVerArquivos.UseVisualStyleBackColor = true;
+			this.botaoVerArquivos.UseVisualStyleBackColor = false;
 			this.botaoVerArquivos.Click += new System.EventHandler(this.botaoVerArquivos_Click);
 			// 
 			// iconeArquivosBaixados
 			// 
 			this.iconeArquivosBaixados.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("iconeArquivosBaixados.BackgroundImage")));
 			this.iconeArquivosBaixados.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-			this.iconeArquivosBaixados.Location = new System.Drawing.Point(821, 493);
+			this.iconeArquivosBaixados.Location = new System.Drawing.Point(667, 493);
 			this.iconeArquivosBaixados.Name = "iconeArquivosBaixados";
 			this.iconeArquivosBaixados.Size = new System.Drawing.Size(69, 65);
 			this.iconeArquivosBaixados.TabIndex = 10;
@@ -200,7 +202,7 @@
 			// checkBoxMp4
 			// 
 			this.checkBoxMp4.AutoSize = true;
-			this.checkBoxMp4.Location = new System.Drawing.Point(643, 482);
+			this.checkBoxMp4.Location = new System.Drawing.Point(982, 482);
 			this.checkBoxMp4.Name = "checkBoxMp4";
 			this.checkBoxMp4.Size = new System.Drawing.Size(121, 17);
 			this.checkBoxMp4.TabIndex = 11;
@@ -211,6 +213,7 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.BackColor = System.Drawing.SystemColors.Control;
 			this.ClientSize = new System.Drawing.Size(1115, 612);
 			this.Controls.Add(this.checkBoxMp4);
 			this.Controls.Add(this.iconeArquivosBaixados);

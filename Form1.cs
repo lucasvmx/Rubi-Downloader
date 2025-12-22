@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 using System.Drawing;
+using System.Threading;
 
 namespace Rubi_Downloader
 {
@@ -132,8 +133,9 @@ namespace Rubi_Downloader
 			failedDownloads = 0;
 			successfulDownloads = 0;
 
-			updateStatusLabel($"Links: {linksInput.Length}");
+			updateStatusLabel($"Links inseridos: {linksInput.Length}");
 			setDefinedProgressBar(linksInput.Length);
+			setStatusLabelColor(Color.Blue);
 
 			var tasks = new List<Task>();
 			List<Task> convertTasks = new List<Task>();
@@ -223,7 +225,7 @@ namespace Rubi_Downloader
 								);
 
 								setStatusLabelColor(Color.Blue);
-								updateStatusLabel($"Baixando: {url}");
+								updateStatusLabel($"{url}: {e.Data}");
 							}
 						}
 					};
@@ -431,13 +433,35 @@ namespace Rubi_Downloader
 				process.OutputDataReceived += (s, e) =>
 				{
 					if (!string.IsNullOrWhiteSpace(e.Data))
-						Console.WriteLine(e.Data);
+					{
+						setStatusLabelColor(Color.Blue);
+						updateStatusLabel(e.Data);
+
+						lock (_logLock)
+						{
+							File.AppendAllText(
+								logsFile,
+								$"Conversão: {Path.GetFileName(inputWebm)} | Mensagem: {e.Data}{Environment.NewLine}"
+							);
+						}
+					}
 				};
 
 				process.ErrorDataReceived += (s, e) =>
 				{
 					if (!string.IsNullOrWhiteSpace(e.Data))
-						Console.WriteLine(e.Data);
+					{
+						setStatusLabelColor(Color.Blue);
+						updateStatusLabel(e.Data);
+
+						lock (_logLock)
+						{
+							File.AppendAllText(
+								errorFile,
+								$"Conversão: {Path.GetFileName(inputWebm)} | Mensagem: {e.Data}{Environment.NewLine}"
+							);
+						}
+					}
 				};
 
 				process.Start();
