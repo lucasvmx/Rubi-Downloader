@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Rubi Downloader"
-#define MyAppVersion "1.0"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "Lucas Vieira, Inc"
 #define MyAppURL "https://github.com/lucasvmx/Rubi-Downloader"
 #define MyAppExeName "Rubi Downloader.exe"
