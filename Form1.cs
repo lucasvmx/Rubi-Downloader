@@ -27,6 +27,9 @@ namespace Rubi_Downloader
 		{
 			InitializeComponent();
 
+			// Modifica o título do form
+			Text = "Rubi Downloader v1.1.0";
+
 			toolStripStatusLabel1.ForeColor = Color.Blue;
 			toolStripStatusLabel1.Text = $"Pasta de saída definida: {Path.Combine(Directory.GetCurrentDirectory(), outputFolder)}";
 
@@ -37,11 +40,8 @@ namespace Rubi_Downloader
 				Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), logsFolder));
 
 				// Se o arquivo de configuração existir, carrega as configurações
-				if(File.Exists("config.xml"))
-				{
-					LoadConfig();
-				}
-					
+				LoadConfig();
+
 				// Limpa logs antigos
 				errorFile = Path.Combine(Directory.GetCurrentDirectory(), logsFolder, errorFile);
 				logsFile = Path.Combine(Directory.GetCurrentDirectory(), logsFolder, logsFile);
@@ -84,9 +84,7 @@ namespace Rubi_Downloader
 			}
 		}
 
-		// ================================
-		// UTILITÁRIOS
-		// ================================
+
 		private bool haveDuplicatedLinks(string[] links)
 		{
 			var set = new HashSet<string>();
@@ -107,9 +105,6 @@ namespace Rubi_Downloader
 			return link.StartsWith("https://www.youtube.com", StringComparison.OrdinalIgnoreCase);
 		}
 
-		// ================================
-		// BOTÃO BAIXAR (ASYNC)
-		// ================================
 		private async void botaoBaixar_Click(object sender, EventArgs e)
 		{
 			string[] linksInput = caixaTextoLinks.Lines
@@ -140,6 +135,8 @@ namespace Rubi_Downloader
 			var tasks = new List<Task>();
 			List<Task> convertTasks = new List<Task>();
 
+			ShowSidebarNotification("Os downloads foram iniciados, aguarde ...", "Aviso");
+
 			foreach (string link in linksInput)
 			{
 				if (!isValidYoutubeLink(link))
@@ -156,16 +153,27 @@ namespace Rubi_Downloader
 			// Aguarda TODOS os downloads finalizarem
 			await Task.WhenAll(tasks);
 
-			setStatusLabelColor(Color.Green);
+
+			if (failedDownloads > 0)
+			{
+				setStatusLabelColor(Color.Red);
+			}
+			else
+			{
+				setStatusLabelColor(Color.Green);
+			}
+
 			updateStatusLabel(
 				$"Finalizado | Sucesso: {successfulDownloads} | Falhas: {failedDownloads}"
 			);
 
-			if(checkBoxMp4.Checked)
+			if (checkBoxMp4.Checked)
 			{
 				// Itera sobre os arquivos baixados para conversão
 				var downloadedFiles = Directory.GetFiles(outputFolder, "*.webm");
 				string ffmpegPath = Path.Combine(Directory.GetCurrentDirectory(), "bin", "ffmpeg.exe");
+
+				ShowSidebarNotification("Iniciando conversões para MP4", "Aviso");
 
 				// Para cada arquivo .webm, cria uma tarefa de conversão
 				foreach (string file in downloadedFiles)
@@ -183,17 +191,40 @@ namespace Rubi_Downloader
 				updateStatusLabel("Todas as conversões concluídas.");
 			}
 
-			MessageBox.Show(
-				"Todos os downloads foram processados!",
-				"Concluído",
-				MessageBoxButtons.OK,
-				MessageBoxIcon.Information
-			);
+			if (failedDownloads > 0)
+			{
+				MessageBox.Show(
+					"Alguns downloads falharam. Verifique o log de erros para mais detalhes.",
+					"Aviso",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Error
+				);
+			}
+			else
+			{
+				ShowSidebarNotification("Todos os downloads foram concluídos", "Sucesso");
+			}
 		}
 
-		// ================================
-		// DOWNLOAD ASSÍNCRONO
-		// ================================
+		/*
+		 * Essa função mostra uma notificação na bandeja do sistema.
+		 * 
+		 * */
+		private void ShowSidebarNotification(string message, string title = "Rubi Downloader")
+		{
+			BeginInvoke(new Action(() =>
+			{
+				notifyIcon1.BalloonTipTitle = title;
+				notifyIcon1.BalloonTipText = message;
+				notifyIcon1.Visible = true;
+				notifyIcon1.ShowBalloonTip(3000);
+
+				// Desativa o ícone após mostrar a notificação
+				Task.Delay(5000).ContinueWith(t => notifyIcon1.Dispose());
+			}));
+		}
+
+
 		private Task DownloadFileAsync(string url)
 		{
 			return Task.Run(() =>
@@ -267,6 +298,10 @@ namespace Rubi_Downloader
 					failedDownloads++;
 					setStatusLabelColor(Color.Red);
 					updateStatusLabel($"Erro ao iniciar download: {ex.Message}");
+
+					File.AppendAllText(errorFile,
+						$"Erro ao iniciar download do link: {url} | Mensagem: {ex.Message}{Environment.NewLine}"
+					);
 				}
 				finally
 				{
@@ -275,9 +310,7 @@ namespace Rubi_Downloader
 			});
 		}
 
-		// ================================
-		// UI HELPERS (THREAD-SAFE)
-		// ================================
+
 		private void setDefinedProgressBar(int maxValue)
 		{
 			BeginInvoke(new Action(() =>
@@ -307,9 +340,6 @@ namespace Rubi_Downloader
 			}));
 		}
 
-		// ================================
-		// AJUDA / ÍCONES
-		// ================================
 		private void botaoAjuda_Click(object sender, EventArgs e)
 		{
 			MessageBox.Show(
@@ -353,12 +383,13 @@ namespace Rubi_Downloader
 					try
 					{
 						SaveConfig();
-					} catch
+					}
+					catch
 					{
 						MessageBox.Show("Erro ao salvar configuração.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
 						return;
 					}
-					
+
 					MessageBox.Show($"Pasta de saída: {outputFolder}", "Mudança de pasta", MessageBoxButtons.OK, MessageBoxIcon.Information);
 				}
 			}
@@ -400,10 +431,10 @@ namespace Rubi_Downloader
 			}));
 		}
 
-		private Task ConvertWebmToMp4(string ffmpegPath,string inputWebm, string outputMp4)
+		private Task ConvertWebmToMp4(string ffmpegPath, string inputWebm, string outputMp4)
 		{
 			// Não permite múltiplas conversões simultâneas
-			lock (_taskLock) 
+			lock (_taskLock)
 			{
 				updateStatusLabel($"Iniciando conversão: {Path.GetFileName(inputWebm)}");
 			}
@@ -482,6 +513,15 @@ namespace Rubi_Downloader
 
 			// finaliza o ffmpeg.exe se estiver rodando
 			Process.GetProcessesByName("ffmpeg").ToList().ForEach(p => p.Kill());
+		}
+
+		private void caixaTextoLinks_KeyPress(object sender, KeyPressEventArgs e)
+		{
+			// Quando o usuário pressiona ctrl + v, insere uma nova linha após o conteúdo colado
+			// o conteúdo colado não deve aparecer duplicado
+			// depois que esse evento é acionado, o link já foi colado
+			e.Handled = true;
+			caixaTextoLinks.AppendText(Environment.NewLine);
 		}
 	}
 
