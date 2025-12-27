@@ -15,6 +15,13 @@ namespace Rubi_Downloader
 	{
 		private int failedDownloads = 0;
 		private int successfulDownloads = 0;
+
+		// Contador de conversões para MP4
+		private int mp4Conversions = 0;
+
+		// Quantidade de arquivos mp4 que realmente foram convertidos
+		private int mp4Converted = 0;
+
 		private static readonly object _logLock = new object();
 		private static readonly object _taskLock = new object();
 		private string outputFolder = @"Data\Videos";
@@ -30,14 +37,16 @@ namespace Rubi_Downloader
 			// Modifica o título do form
 			Text = "Rubi Downloader v1.1.0";
 
+			outputFolder = Path.Combine(Directory.GetCurrentDirectory(), outputFolder);
+			logsFolder = Path.Combine(Directory.GetCurrentDirectory(), logsFolder);
 			toolStripStatusLabel1.ForeColor = Color.Blue;
-			toolStripStatusLabel1.Text = $"Pasta de saída definida: {Path.Combine(Directory.GetCurrentDirectory(), outputFolder)}";
+			toolStripStatusLabel1.Text = $"Pasta de saída definida: {outputFolder}";
 
 			// Cria a pasta onde os vídeos serão salvos
 			try
 			{
-				Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), outputFolder));
-				Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), logsFolder));
+				Directory.CreateDirectory(outputFolder);
+				Directory.CreateDirectory(logsFolder);
 
 				// Se o arquivo de configuração existir, carrega as configurações
 				LoadConfig();
@@ -127,6 +136,8 @@ namespace Rubi_Downloader
 
 			failedDownloads = 0;
 			successfulDownloads = 0;
+			mp4Conversions = 0;
+			mp4Converted = 0;
 
 			updateStatusLabel($"Links inseridos: {linksInput.Length}");
 			setDefinedProgressBar(linksInput.Length);
@@ -175,9 +186,20 @@ namespace Rubi_Downloader
 
 				ShowSidebarNotification("Iniciando conversões para MP4", "Aviso");
 
+				mp4Conversions = downloadedFiles.Length;
+				setDefinedProgressBar(mp4Conversions);
+				updateStatusLabel("Iniciando conversões para MP4...");
+
 				// Para cada arquivo .webm, cria uma tarefa de conversão
 				foreach (string file in downloadedFiles)
 				{
+					// Verifica se o arquivo MP4 já existe
+					if (CheckIfMp4FileAlreadyExists(file))
+					{
+						IncrementarProgresso();
+						continue;
+					}
+
 					convertTasks.Add(ConvertWebmToMp4(
 						ffmpegPath,
 						file,
@@ -185,10 +207,20 @@ namespace Rubi_Downloader
 					));
 
 					await Task.WhenAll(convertTasks);
+					IncrementarProgresso();
+					mp4Converted++;
 				}
 
 				setStatusLabelColor(Color.Green);
-				updateStatusLabel("Todas as conversões concluídas.");
+				if (mp4Converted > 0)
+				{
+					// O programa precisa deixar claro que as conversões que não concluíram foi porque não precisaram ser feitas
+					updateStatusLabel($"Conversões para MP4 concluídas: {mp4Converted} de {mp4Conversions} arquivos.");
+				}
+				else
+				{
+					updateStatusLabel("Nenhum arquivo necessitou de conversão para MP4.");
+				}
 			}
 
 			if (failedDownloads > 0)
@@ -202,7 +234,7 @@ namespace Rubi_Downloader
 			}
 			else
 			{
-				ShowSidebarNotification("Todos os downloads foram concluídos", "Sucesso");
+				ShowSidebarNotification("Todos os downloads foram concluídos com sucesso!", "Sucesso");
 			}
 		}
 
@@ -236,7 +268,7 @@ namespace Rubi_Downloader
 						StartInfo = new ProcessStartInfo
 						{
 							FileName = "yt-dlp.exe",
-							Arguments = $"-o \"{outputFolder}\\%(title)s.%(ext)s\" {url}",
+							Arguments = $"-k -o \"{outputFolder}\\%(title)s.%(ext)s\" {url}",
 							UseShellExecute = false,
 							RedirectStandardOutput = true,
 							RedirectStandardError = true,
@@ -299,9 +331,13 @@ namespace Rubi_Downloader
 					setStatusLabelColor(Color.Red);
 					updateStatusLabel($"Erro ao iniciar download: {ex.Message}");
 
-					File.AppendAllText(errorFile,
-						$"Erro ao iniciar download do link: {url} | Mensagem: {ex.Message}{Environment.NewLine}"
-					);
+					lock (_logLock)
+					{
+						File.AppendAllText(
+							logsFile,
+							$"Erro ao iniciar download do link: {url} | Mensagem: {ex.Message}{Environment.NewLine}"
+						);
+					}
 				}
 				finally
 				{
@@ -368,6 +404,19 @@ namespace Rubi_Downloader
 
 		private void botaoEscolherPasta_Click(object sender, EventArgs e)
 		{
+
+			// Confirma se o usuário deseja mudar a pasta e exibe a atualmente
+			// definida
+			DialogResult result = MessageBox.Show(
+				$"A pasta atualmente definida é:\n{outputFolder}\n\nDeseja alterá-la?",
+				"Confirmar mudança de pasta",
+				MessageBoxButtons.YesNo,
+				MessageBoxIcon.Question
+			);
+			if (result != DialogResult.Yes)
+				return;
+
+
 			using (var folderDialog = new FolderBrowserDialog())
 			{
 				folderDialog.Description = "ESCOLHA A PASTA ONDE OS VÍDEOS SERÃO SALVOS";
@@ -431,12 +480,48 @@ namespace Rubi_Downloader
 			}));
 		}
 
+		/*
+		 * Verifica se o arquivo MP4 já existe.
+		 * Se existir, pula a conversão e retorna true.
+		 * Se não existir, retorna false.
+		 * */
+		private bool CheckIfMp4FileAlreadyExists(string inputWebm)
+		{
+			string outputMp4 = Path.ChangeExtension(inputWebm, ".mp4");
+			if (File.Exists(outputMp4))
+			{
+				lock (_logLock)
+				{
+					File.AppendAllText(
+						logsFile,
+						$"Arquivo MP4 já existe, pulando conversão: {Path.GetFileName(outputMp4)}{Environment.NewLine}"
+					);
+				}
+
+				setStatusLabelColor(Color.Orange);
+				updateStatusLabel($"Arquivo MP4 já existe, pulando conversão: {Path.GetFileName(outputMp4)}");
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
 		private Task ConvertWebmToMp4(string ffmpegPath, string inputWebm, string outputMp4)
 		{
 			// Não permite múltiplas conversões simultâneas
 			lock (_taskLock)
 			{
 				updateStatusLabel($"Iniciando conversão: {Path.GetFileName(inputWebm)}");
+			}
+
+			lock (_logLock)
+			{
+				File.AppendAllText(
+					logsFile,
+					$"Iniciando conversão do arquivo: {Path.GetFileName(inputWebm)}{Environment.NewLine}"
+				);
 			}
 
 			return Task.Run(() =>
@@ -502,6 +587,14 @@ namespace Rubi_Downloader
 				updateStatusLabel($"Convertendo: {Path.GetFileName(inputWebm)} (Aguarde pois pode demorar um pouco)");
 				process.WaitForExit();
 
+				lock (_logLock)
+				{
+					File.AppendAllText(
+						logsFile,
+						$"Conversão finalizada do arquivo: {Path.GetFileName(inputWebm)}{Environment.NewLine}"
+					);
+				}
+
 				if (process.ExitCode != 0)
 					throw new Exception($"ffmpeg falhou (ExitCode={process.ExitCode})");
 			});
@@ -517,9 +610,10 @@ namespace Rubi_Downloader
 
 		private void caixaTextoLinks_KeyPress(object sender, KeyPressEventArgs e)
 		{
-			// Quando o usuário pressiona ctrl + v, insere uma nova linha após o conteúdo colado
-			// o conteúdo colado não deve aparecer duplicado
-			// depois que esse evento é acionado, o link já foi colado
+			// Só trata os eventos do ctrl + v
+			if (e.KeyChar != 22) // 22 é o código ASCII para Ctrl+V
+				return;
+
 			e.Handled = true;
 			caixaTextoLinks.AppendText(Environment.NewLine);
 		}
